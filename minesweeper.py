@@ -46,11 +46,28 @@ class Minesweeper:
         result = np.array(list(product((-1,0,1), repeat=self.dimensions)))
         result = result[np.linalg.norm(result, axis=1)<(self.dimensions)**.5]
         return result
+
+    @property
+    def vacant_cells(self):
+        vacant_cells = list(self.all_cells - self.exclude_cells)
+        # remove any vacant cells that map to parameters in self.previous_values
+        collector = []
+        for cell in vacant_cells:
+            cell_center = tuple([(self.bins[i]+self.bins[i+1])/2 for i in cell])
+            values = {k:v for k,v in zip(self.mms.feature_names_in_, cell_center)}
+            parameters = {k:self.casting_functions[k](v) for k,v in zip(self.mms.feature_names_in_, self.mms.inverse_transform([cell_center])[0])}
+            if str(parameters) in self.previous_values:
+                if self.verbose: print('Already done')
+                self.previous_values[str(parameters)]['values'] += [values]
+                self.update_values(parameters, score=self.previous_values[str(parameters)]['score'])
+            else:
+                collector.append(cell)
+        return collector
     
     def get_parameters(self):
         attempts = 0
         while True:        
-            vacant_cells = list(self.all_cells-self.exclude_cells)
+            vacant_cells = self.vacant_cells# list(self.all_cells-self.exclude_cells)
             if len(vacant_cells)==0:
                 self.b+=1
                 attempts +=1
@@ -67,16 +84,8 @@ class Minesweeper:
             parameters = {k:self.casting_functions[k](v) 
                 for k,v in zip(self.mms.feature_names_in_, self.mms.inverse_transform([chosen_cell_center])[0] )}
 
-            if str(parameters) in self.previous_values:
-                if self.verbose: print('Already done')
-                self.previous_values[str(parameters)]['values'] += [values]
-                self.update_values(parameters, score = self.previous_values[str(parameters)]['score'])
-
-                continue
-
-            else:
-                self.previous_values[str(parameters)] = {'values':[values]}
-                return parameters
+            self.previous_values[str(parameters)] = {'values':[values]}
+            return parameters
 
 
     def update_values(self, parameters, score):
