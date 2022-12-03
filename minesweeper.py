@@ -1,16 +1,51 @@
+'''TODO:
+    make int the default function
+    make .values_to_parameters() method
+    cache last suggested parameters for fast updates
+'''
+
+
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler as MMS
-from sklearn.svm import SVR
 from itertools import product
-from sklearn.ensemble import RandomForestClassifier as RFC
-from sklearn.metrics import f1_score
-from sklearn.model_selection import train_test_split
-from sklearn.datasets import make_classification
+
+
+
 
 
 class Minesweeper:
+    """Minesweeper: A tool for simplified grid search over parameter space.
+
+    Minesweeper is a simplifed tool for performing a grid search over a parameter
+    space in any number of dimensions. Minesweeper maintains a dataframe of parameter
+    sets that have already been used and suggests new combinations of parameters from
+    a blank region of parameter space.
+
+    Unlike other GridSearch tools, Minesweeper does not do additional functions
+    such as construct, train or score models, perform N-fold cross validation, or use
+    callbacks. These functions can more easily and more flexibily be acheived outside
+    of the grid search tool. This also makes it easy to interrupt and continue the
+    tuning process.
+
+    Minesweeper efficiently covers the parameter space by using a series of progressively
+    smaller grids to look for blank spaces on the parameter map to explore. It is 
+    invariant to scale and cardinality. I.e, it can search over a range of [0...1000] as
+    efficiently as a range of [0..1].
+
+    The search over parameter space is unordered so it does not repeatedly draw from one
+    area of the space. The search is exhaustive unless one or more parameters is inexhaustabile 
+    (i.e. a float). Minesweeper will terminate by returning `None` if 
+    all combinations of parameters have been used.
+
+
+
+
+
+
+
+
+    """
     def __init__(self, parameter_space, verbose=False):
         self.b = 3
         self.df = pd.DataFrame(columns=parameter_space.keys())
