@@ -1,5 +1,5 @@
 '''TODO:
-    make int the default function
+
     make .values_to_parameters() method
     cache last suggested parameters for fast updates
 '''
@@ -49,7 +49,7 @@ class Minesweeper:
     def __init__(self, parameter_space, verbose=False):
         self.b = 3
         self.df = pd.DataFrame(columns=parameter_space.keys())
-        self.casting_functions = {k:v['func'] for k,v in parameter_space.items()}
+        self.casting_functions = {k:v['func'] if 'func' in v else float if max(v['range'])==1 else int for k,v in parameter_space.items()}
         self.df['score'] = []
         self.mms = MMS().fit(pd.DataFrame({k:v['range'] for k,v in parameter_space.items()}))
         self.dimensions = len(parameter_space)
@@ -82,6 +82,7 @@ class Minesweeper:
         result = result[np.linalg.norm(result, axis=1)<(self.dimensions)**.5]
         return result
 
+
     @property
     def vacant_cells(self):
         vacant_cells = list(self.all_cells - self.exclude_cells)
@@ -102,7 +103,7 @@ class Minesweeper:
     def get_parameters(self):
         attempts = 0
         while True:        
-            vacant_cells = self.vacant_cells# list(self.all_cells-self.exclude_cells)
+            vacant_cells = self.vacant_cells
             if len(vacant_cells)==0:
                 self.b+=1
                 attempts +=1
